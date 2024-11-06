@@ -66,11 +66,11 @@ bindings:
     kind: client
     options:
       servers:
-        - ${env.kafka_bootstrap_servers}
+        - "${env.kafka_bootstrap_servers}"
       sasl:
         mechanism: plain
-        username: ${env.kafka_username}
-        password: ${env.kafka_password}
+        username: "${env.kafka_username}"
+        password: "${env.kafka_password}"
     exit: south_tls_client
   south_tls_client:
     type: tls
