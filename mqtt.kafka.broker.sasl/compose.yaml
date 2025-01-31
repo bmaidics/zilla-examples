@@ -21,7 +21,7 @@ services:
     command: start -v -e
 
   kafka:
-    image: bitnami/kafka:3.5
+    image: bitnami/kafka:3.6
     ports:
       - 9092:9092
     healthcheck:
@@ -59,7 +59,7 @@ services:
       - './truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro'
 
   kafka-init:
-    image: bitnami/kafka:3.5
+    image: bitnami/kafka:3.6
     user: root
     depends_on:
       kafka:
