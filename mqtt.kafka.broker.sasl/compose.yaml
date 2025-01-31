@@ -1,15 +1,15 @@
-name: ${NAMESPACE:-zilla-http-kafka-oneway}
+name: ${NAMESPACE:-zilla-mqtt-kafka-broker}
 services:
   zilla:
     image: ghcr.io/aklivity/zilla:${ZILLA_VERSION:-latest}
     restart: unless-stopped
     ports:
-      - 7114:7114
+      - 7183:7183
     healthcheck:
       interval: 5s
       timeout: 3s
       retries: 5
-      test: ["CMD", "bash", "-c", "echo -n '' > /dev/tcp/127.0.0.1/7114"]
+      test: ["CMD", "bash", "-c", "echo -n '' > /dev/tcp/127.0.0.1/7183"]
     environment:
       KAFKA_BOOTSTRAP_SERVER: kafka:9092
       KEYSTORE_PASSWORD: generated
@@ -74,6 +74,9 @@ services:
       - |
         echo -e "Creating kafka topic";
         /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --topic events 
+        /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --topic mqtt-messages 
+        /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --topic mqtt-sessions --config cleanup.policy=compact
+        /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --topic mqtt-retained --config cleanup.policy=compact
         echo -e "Successfully created the following topics:";
         /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --list;
         echo -e "Creating user";

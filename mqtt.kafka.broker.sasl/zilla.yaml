@@ -1,5 +1,5 @@
 ---
-name: example
+name: MQTT-intro
 vaults:
   your_clients:
     type: filesystem
@@ -9,35 +9,33 @@ vaults:
         type: jks
         password: ${{env.KEYSTORE_PASSWORD}}
 bindings:
+  # Proxy service entrypoint
   north_tcp_server:
     type: tcp
     kind: server
     options:
       host: 0.0.0.0
-      port:
-        - 7114
-    routes:
-      - when:
-          - port: 7114
-        exit: north_http_server
-  north_http_server:
-    type: http
+      port: 7183
+    exit: north_mqtt_server
+
+  # MQTT Broker With an exit to Kafka
+  north_mqtt_server:
+    type: mqtt
     kind: server
-    routes:
-      - when:
-          - headers:
-              :scheme: http
-        exit: north_http_kafka_mapping
-  north_http_kafka_mapping:
-    type: http-kafka
+    exit: north_mqtt_kafka_mapping
+
+  # Proxy MQTT messages to Kafka
+  north_mqtt_kafka_mapping:
+    type: mqtt-kafka
     kind: proxy
-    routes:
-      - when:
-          - path: /events
-        exit: north_kafka_cache_client
-        with:
-          capability: produce
-          topic: events
+    options:
+      topics:
+        sessions: mqtt-sessions
+        messages: mqtt-messages
+        retained: mqtt-retained
+    exit: north_kafka_cache_client
+
+  # Kafka sync layer
   north_kafka_cache_client:
     type: kafka
     kind: cache_client
@@ -45,7 +43,14 @@ bindings:
   south_kafka_cache_server:
     type: kafka
     kind: cache_server
+    options:
+      bootstrap:
+        - mqtt-messages
+        - mqtt-sessions
+        - mqtt-retained
     exit: south_kafka_client
+
+  # Connect to Kafka
   south_kafka_client:
     type: kafka
     kind: client
@@ -72,6 +77,7 @@ bindings:
   south_tcp_client:
     type: tcp
     kind: client
+
 telemetry:
   exporters:
     stdout_logs_exporter:
