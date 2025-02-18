@@ -12,6 +12,12 @@ bindings:
       - when:
           - port: 7114
         exit: north_http_server
+    telemetry:
+      metrics:
+        - stream.*
+      exporters:
+        stdout_logs_exporter:
+          type: stdout
   north_http_server:
     type: http
     kind: server
@@ -20,6 +26,12 @@ bindings:
           - headers:
               :scheme: http
         exit: north_http_kafka_mapping
+    telemetry:
+      metrics:
+        - http.*
+      exporters:
+        stdout_logs_exporter:
+          type: stdout
   north_http_kafka_mapping:
     type: http-kafka
     kind: proxy
@@ -40,6 +52,13 @@ bindings:
           capability: produce
           topic: events
           key: $${params.id}
+    telemetry:
+      metrics:
+        - stream.*
+        - http.*
+      exporters:
+        stdout_logs_exporter:
+          type: stdout
   north_kafka_cache_client:
     type: kafka
     kind: cache_client
@@ -58,6 +77,13 @@ bindings:
         mechanism: plain
         username: ${{env.kafka_username}}
         password: ${{env.kafka_password}}
+    telemetry:
+      metrics:
+        - stream.*
+        - http.*
+      exporters:
+        stdout_logs_exporter:
+          type: stdout
     exit: south_tls_client
   south_tls_client:
     type: tls
@@ -66,3 +92,22 @@ bindings:
   south_tcp_client:
     type: tcp
     kind: client
+telemetry:
+  metrics:
+    - http.active.requests
+    - http.duration
+    - http.request.size
+    - http.response.size
+    - stream.active.received
+    - stream.active.sent
+    - stream.opens.received
+    - stream.opens.sent
+    - stream.data.received
+    - stream.data.sent
+    - stream.errors.received
+    - stream.errors.sent
+    - stream.closes.received
+    - stream.closes.sent
+  exporters:
+    stdout_logs_exporter:
+      type: stdout
